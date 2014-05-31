@@ -41,6 +41,7 @@ function display_list($array) {
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
 	<title>ToDo List</title>
 </head>
 <body>
