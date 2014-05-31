@@ -2,18 +2,21 @@
 $filename = 'data/list.txt';
 
 function open_file($filename) {
-    $filesize = filesize($filename);
-   	$read = fopen($filename, 'r');
-   	$listString = trim(fread($read, $filesize));
-   	$listArray = explode("\n", $listString);
-   	fclose($read); 
-	return $listArray;		               
+	$list_array = [];
+	if (is_readable($filename) && filesize($filename) > 0) {
+		$filesize = filesize($filename);
+   		$read = fopen($filename, 'r');
+   		$list_string = trim(fread($read, $filesize));
+   		$list_array = explode("\n", $list_string);
+   		fclose($read);
+   	} 
+	return $list_array;		               
 }
 
 function save_file($filename, $array) {
 	$saved_file = fopen($filename, 'w');
-	$listString = implode("\n", $array);
-	fwrite($saved_file, $listString);
+	$list_string = implode("\n", $array);
+	fwrite($saved_file, $list_string);
 	fclose($saved_file);
 }
 
@@ -29,43 +32,42 @@ function upload_file ($uploaded_file) {
 function display_list($array) {
 	echo "<ul>";
 	foreach ($array as $key => $item) {
-		echo "<li>$item <a href=\"?key=$key\">Complete</a></li>"; //?action=remove&index={$index}
+		echo "<li>$item <a href=\"?key=$key\">Complete</a></li>";
 	}
 	echo "</ul>";
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Todo List</title>
+	<title>ToDo List</title>
 </head>
 <body>
-	<h2>TODO List</h2>
-<?php	
-// var_dump($_POST);
-// var_dump($_FILES['file1']);
+	<h2>ToDo List</h2>
+
+<?php
 $list = open_file($filename);
 if (isset($_POST['add']) || !empty($_POST['add'])) {
 	array_push($list, $_POST['add']);
 	save_file($filename, $list);
-	display_list($list);
+
 } else if (isset($_GET['key']) || !empty($_GET['key'])) {
 	unset($list[$_GET['key']]);
 	save_file($filename, $list);
-	display_list($list);
+
 } else if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
 	if ($_FILES['file1']['type'] == 'text/plain') {
 		$saved_filename = upload_file($_FILES['file1']);
-		$saved_file_array = open_file($saved_filename);//saved file name from function
+		$saved_file_array = open_file($saved_filename);
 		$list = array_merge($list, $saved_file_array);
 		save_file($filename, $list);
-		display_list($list);
+
 	} else {
 		echo "You cannot upload that file";
-	}	
-} else {
-	display_list($list);
+	}
 }
+display_list($list);
 ?>
 	<form method="POST" action="/todo_list.php">
 		<p>
