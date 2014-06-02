@@ -1,15 +1,15 @@
-<?php 
+<? 
 $filename = 'data/list.txt';
 
 function open_file($filename) {
 	$list_array = [];
-	if (is_readable($filename) && filesize($filename) > 0) {
+	<? if (is_readable($filename) && filesize($filename) > 0): ?>
 		$filesize = filesize($filename);
    		$read = fopen($filename, 'r');
    		$list_string = trim(fread($read, $filesize));
    		$list_array = explode("\n", $list_string);
    		fclose($read);
-   	} 
+   <?	endif; ?>
 	return $list_array;		               
 }
 
@@ -30,11 +30,11 @@ function upload_file ($uploaded_file) {
 }
 
 function display_list($array) {
-	echo "<ul>";
-	foreach ($array as $key => $item) {
-		echo "<li>$item <a href=\"?key=$key\">Complete</a></li>";
-	}
-	echo "</ul>";
+	<?= "<ul>"; ?>
+	<? foreach ($array as $key => $item) : ?>
+		<?= "<li>$item <a href=\"?key=$key\">Complete</a></li>"; ?>
+	<? endforeach; ?>
+	<?= "</ul>";?>
 }
 ?>
 
@@ -47,26 +47,28 @@ function display_list($array) {
 <body>
 	<h2>ToDo List</h2>
 
-<?php
+<?
 $list = open_file($filename);
-if (isset($_POST['add']) || !empty($_POST['add'])) {
+<?if (isset($_POST['add']) || !empty($_POST['add'])) : ?>
 	array_push($list, $_POST['add']);
 	save_file($filename, $list);
 
-} else if (isset($_GET['key']) || !empty($_GET['key'])) {
+<?else if (isset($_GET['key']) || !empty($_GET['key'])) : ?>
 	unset($list[$_GET['key']]);
 	save_file($filename, $list);
 
-} else if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
+<?else if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) :?>
 	if ($_FILES['file1']['type'] == 'text/plain') {
 		$saved_filename = upload_file($_FILES['file1']);
 		$saved_file_array = open_file($saved_filename);
 		$list = array_merge($list, $saved_file_array);
 		save_file($filename, $list);
 
-	} else {
-		echo "You cannot upload that file";
-	}
+	<? else :?>
+		< ?= "You cannot upload that file"; ?>
+	<? endif;?>
+<? endif;?>
+
 }
 display_list($list);
 ?>
