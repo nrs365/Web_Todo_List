@@ -29,13 +29,6 @@ function upload_file ($uploaded_file) {
 	return $saved_filename;
 }
 
-function display_list($array) {
-	echo "<ul>";
-	
-	}
-	echo "</ul>";
-}
-
 $list = open_file($filename);
 if (isset($_POST['add']) || !empty($_POST['add'])) {
 	array_push($list, $_POST['add']);
