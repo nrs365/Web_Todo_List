@@ -1,4 +1,5 @@
 <?
+
 $filename = 'data/list.txt';
 
 function open_file($filename) {
@@ -55,13 +56,17 @@ if (isset($_POST['add']) || !empty($_POST['add'])) {
 <head>
 	<meta charset="UTF-8">
 	<title>ToDo List</title>
+	<link rel="stylesheet" href="/todo_list.css">
 </head>
 <body>
 	<h2>ToDo List</h2>
+	
 	<ul>
-	<? foreach ($array as $key => $item) : ?>
+	<? foreach ($list as $key => $item) : ?>
 		<?= "<li>$item <a href=\"?key=$key\">Complete</a></li>"; ?>
+	<? endforeach; ?>
 	</ul>
+
 	<form method="POST" action="/todo_list.php">
 		<p>
 			<label for="add">Type in something to add to the list: </label>
