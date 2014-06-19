@@ -3,12 +3,39 @@
 class Filestore {
 
     public $filename = '';
+    public $is_csv = '';
 
     function __construct($filename = '') 
     {
         $this->filename = $filename;
+        $this->is_csv = $this->check_file();
     }
 
+    public function check_file() {
+        $is_csv = substr($this->filename, -3);//need to count from the last end 
+        
+        if($is_csv === "csv") {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function read() {
+        if ($this->$is_csv) {
+            return $this->read_csv();
+        } else {
+            return $this->read_lines();
+        }
+    }
+    
+    public function write($array) {
+        if ($this->$is_csv) {
+            $this->write_csv($array);
+        } else {
+            $this->write_lines($array);
+        }
+    }
     /**
      * Returns array of lines in $this->filename
      */
