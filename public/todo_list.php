@@ -17,19 +17,26 @@ $filestore = New Filestore($filename);
 //"<li>$item <a href=\"?key=$key\">Complete</a></li>";
 
 $list = $filestore->read($filename);
+try {
+	if (isset($_POST['add'])) {
+		if (empty($_POST['add']) || strlen($_POST['add']) >= 240) {
+			throw new Exception("Items added to the list must be 240 characters or less and cannot be blank");
+		}
+		array_push($list, $_POST['add']);
+		$filestore->write($list);
 
-if (isset($_POST['add'])) {
-	if (empty($_POST['add']) || strlen($_POST['add']) >= 240) {
-		throw new Exception("Items added to the list must be 240 characters or less and cannot be blank");
 	}
-	array_push($list, $_POST['add']);
-	$filestore->write($list);
+} catch (Exception $exception) {
+	$msg = $exception->getMessage() . PHP_EOL;
+}
 
-} else if (isset($_GET['key']) || !empty($_GET['key'])) {
+if (isset($_GET['key']) || !empty($_GET['key'])) {
 	unset($list[$_GET['key']]);
 	$filestore->write($list);
 
-} else if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
+}
+
+if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
 	if ($_FILES['file1']['type'] == 'text/plain') {
 		$saved_filename = upload_file($_FILES['file1']);
 		$saved_file_array = open_file($saved_filename);
@@ -39,7 +46,6 @@ if (isset($_POST['add'])) {
 		echo "You cannot upload that file";
 	}
 }
-
 //var_dump($list);
 ?>
 
@@ -51,6 +57,10 @@ if (isset($_POST['add'])) {
 </head>
 <body>
 	<h2>ToDo List</h2>
+	<?if (isset($msg)) : ?>
+		<? echo $msg; ?>
+	<? endif; ?>
+
 	<ul>
 	<? foreach ($list as $key => $item) : ?>
 		<li><?= $item ?><a href="?key=<?= $key; ?>">Complete</a></li>
