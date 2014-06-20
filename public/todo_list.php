@@ -1,33 +1,10 @@
 <?php
-
 require_once('classes/filestore.php');
-
 $filename = 'data/list.txt';
-
 
 // //need to instanciate the class for Filestore
 $filestore = New Filestore($filename);
-$list = $filestore->read_lines();
-//var_dump($list);
-
-// function open_file($filename) {
-// 	$list_array = [];
-// 	if (is_readable($filename) && filesize($filename) > 0) {
-// 		$filesize = filesize($filename);
-//    		$read = fopen($filename, 'r');
-//    		$list_string = trim(fread($read, $filesize));
-//    		$list_array = explode("\n", $list_string);
-//    		fclose($read);
-//    	}
-// 	return $list_array;		               
-// }
-
-// function save_file($filename, $array) {
-// 	$saved_file = fopen($filename, 'w');
-// 	$list_string = implode("\n", $array);
-// 	fwrite($saved_file, $list_string);
-// 	fclose($saved_file);
-// }
+//$list = $filestore->check_file();
 
 // function upload_file ($uploaded_file) {
 // 	$filename = $uploaded_file['name'];
@@ -37,27 +14,32 @@ $list = $filestore->read_lines();
 // 	move_uploaded_file($uploaded_file['tmp_name'], $saved_filename);
 // 	return $saved_filename;
 // }
-
 //"<li>$item <a href=\"?key=$key\">Complete</a></li>";
-$list = $filestore->read_lines($filename);
-if (isset($_POST['add']) || !empty($_POST['add'])) {
+
+$list = $filestore->read($filename);
+
+if (isset($_POST['add'])) {
+	if (empty($_POST['add']) || strlen($_POST['add']) >= 240) {
+		throw new Exception("Items added to the list must be 240 characters or less and cannot be blank");
+	}
 	array_push($list, $_POST['add']);
-	$filestore->write_lines($list);
+	$filestore->write($list);
 
 } else if (isset($_GET['key']) || !empty($_GET['key'])) {
 	unset($list[$_GET['key']]);
-	$filestore->write_lines($list);
+	$filestore->write($list);
 
 } else if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
 	if ($_FILES['file1']['type'] == 'text/plain') {
 		$saved_filename = upload_file($_FILES['file1']);
 		$saved_file_array = open_file($saved_filename);
 		$list = array_merge($list, $saved_file_array);
-		$filestore->write_lines($list);
+		$filestore->write($list);
 } else {
 		echo "You cannot upload that file";
 	}
 }
+
 //var_dump($list);
 ?>
 
@@ -71,7 +53,6 @@ if (isset($_POST['add']) || !empty($_POST['add'])) {
 	<h2>ToDo List</h2>
 	<ul>
 	<? foreach ($list as $key => $item) : ?>
-
 		<li><?= $item ?><a href="?key=<?= $key; ?>">Complete</a></li>
 	<? endforeach; ?>
 	</ul>
