@@ -4,7 +4,6 @@ $filename = 'data/list.txt';
 
 // //need to instanciate the class for Filestore
 $filestore = New Filestore($filename);
-//$list = $filestore->check_file();
 
 // function upload_file ($uploaded_file) {
 // 	$filename = $uploaded_file['name'];
@@ -17,23 +16,25 @@ $filestore = New Filestore($filename);
 //"<li>$item <a href=\"?key=$key\">Complete</a></li>";
 
 $list = $filestore->read($filename);
+
+class InvalidInputException extends Exception {}
+
 try {
 	if (isset($_POST['add'])) {
 		if (empty($_POST['add']) || strlen($_POST['add']) >= 240) {
-			throw new Exception("Items added to the list must be 240 characters or less and cannot be blank");
+			throw new InvalidInputException("Exception: Items added to the list must be 240 characters or less and cannot be blank");
 		}
 		array_push($list, $_POST['add']);
 		$filestore->write($list);
 
 	}
-} catch (Exception $exception) {
+} catch (InvalidInputException $exception) {
 	$msg = $exception->getMessage() . PHP_EOL;
 }
 
 if (isset($_GET['key']) || !empty($_GET['key'])) {
 	unset($list[$_GET['key']]);
 	$filestore->write($list);
-
 }
 
 if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
@@ -46,7 +47,7 @@ if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
 		echo "You cannot upload that file";
 	}
 }
-//var_dump($list);
+
 ?>
 
 <!DOCTYPE html>
@@ -57,15 +58,17 @@ if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
 </head>
 <body>
 	<h2>ToDo List</h2>
+	
 	<?if (isset($msg)) : ?>
 		<? echo $msg; ?>
 	<? endif; ?>
 
 	<ul>
-	<? foreach ($list as $key => $item) : ?>
-		<li><?= $item ?><a href="?key=<?= $key; ?>">Complete</a></li>
-	<? endforeach; ?>
+		<? foreach ($list as $key => $item) : ?>
+			<li><?= $item ?><a href="?key=<?= $key; ?>">Complete</a></li>
+		<? endforeach; ?>
 	</ul>
+
 	<form method="POST" action="/todo_list.php">
 		<p>
 			<label for="add">Type in something to add to the list: </label>
@@ -83,6 +86,7 @@ if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
 		<p>
 			<button type="submit" value="upload">Upload file!</button>
 		</p>	
-	</form>	
+	</form>
+
 </body>
 </html>
