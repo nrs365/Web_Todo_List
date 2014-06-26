@@ -13,29 +13,27 @@ echo $dbc->getAttribute(PDO::ATTR_CONNECTION_STATUS) . "\n";
 // //need to instanciate the class for Filestore
 //$filestore = New Filestore($filename);
 
-// function upload_file ($uploaded_file) {
-// 	$filename = $uploaded_file['name'];
-// 	$upload_directory = '/vagrant/sites/todo.dev/public/uploads/';
-// 	$upload_filename = basename($filename);
-// 	$saved_filename = $upload_directory . $upload_filename;
-// 	move_uploaded_file($uploaded_file['tmp_name'], $saved_filename);
-// 	return $saved_filename;
-// }
-// function read_lines($filename)
-//     {
-//        // todo list 
-//         $list_array = [];
-//         if (is_readable($filename) && filesize($filename) > 0) {
-//             $filesize = filesize($filename);
-//             $read = fopen($filename, 'r');
-//             $list_string = trim(fread($read, $filesize));
-//             fclose($read);
-//             $list_array = explode("\n", $list_string);
-//         }
-//         return $list_array; 
-//     }      
+function upload_file ($uploaded_file) {
+	$filename = $uploaded_file['name'];
+	$upload_directory = '/vagrant/sites/todo.dev/public/uploads/';
+	$upload_filename = basename($filename);
+	$saved_filename = $upload_directory . $upload_filename;
+	move_uploaded_file($uploaded_file['tmp_name'], $saved_filename);
+	return $saved_filename;
+}
 
-
+function read_lines($filename) {
+    // todo list 
+    $list_array = [];
+    if (is_readable($filename) && filesize($filename) > 0) {
+        $filesize = filesize($filename);
+        $read = fopen($filename, 'r');
+        $list_string = trim(fread($read, $filesize));
+        fclose($read);
+        $list_array = explode("\n", $list_string);
+    }
+    return $list_array; 
+} 
 //"<li>$item <a href=\"?key=$key\">Complete</a></li>";
 
 //$list = $filestore->read($filename);
@@ -49,14 +47,13 @@ try {
 			throw new InvalidInputException("Exception: Items added to the list must be 150 characters or less and cannot be blank");
 		} else {
 			//2a) is the item being added? add todo
-		$stmt = $dbc->prepare('INSERT INTO todo_db (add_item) VALUES (:add_item)');
-		$stmt->bindValue(':add_item', $_POST['add_item'], PDO::PARAM_STR);
-		$stmt->execute();
-	}		
+			$stmt = $dbc->prepare('INSERT INTO todo_db (add_item) VALUES (:add_item)');
+			$stmt->bindValue(':add_item', $_POST['add_item'], PDO::PARAM_STR);
+			$stmt->execute();
+		}	
 		//var_dump($_POST['add_item']);
 		//need to make page refresh to get new item to show up
 		//$filestore->write($list);
-
 	}
 } catch (InvalidInputException $exception) {
 	$msg = $exception->getMessage() . PHP_EOL;
@@ -70,21 +67,21 @@ if (isset($_POST['key']) || !empty($_POST['key'])) {
 	//$filestore->write($list);
 }
 //2c) Is a file being uploaded
-// if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
-// 	if ($_FILES['file1']['type'] == 'text/plain') {
-// 		$saved_filename = upload_file($_FILES['file1']);
-// 		$saved_file_array = read_lines($saved_filename);
-// 		$stmt = $dbc->prepare('INSERT INTO todo (add_item) VALUES (:add_item)');
-// 		$stmt->bindValue(':add_item', $_POST['add_item'], PDO::PARAM_STR);
-// 		$stmt->execute(array($_POST['add_item']));
-// 		//$list = array_merge($list, $saved_file_array); // do a for each loop through the array
-// 		//$filestore->write($list);
-// } else {
-// 		echo "You cannot upload that file";
-// 	}
-// }
+if (isset($_FILES['file1']['error']) && ($_FILES['file1']['error'] == 0)) {
+	if ($_FILES['file1']['type'] == 'text/plain') {
+		$saved_filename = upload_file($_FILES['file1']);
+		$saved_file_array = read_lines($saved_filename);
+		$stmt = $dbc->prepare('INSERT INTO todo_db (add_item) VALUES (:add_item)');
+		foreach ($saved_file_array as $item) {
+			$stmt->bindValue(':add_item', $item, PDO::PARAM_STR);
+			$stmt->execute();
+		}
+	} else {
+		echo "You cannot upload that file";
+	}
+}
 //3) Query DB for total todo count
-
+	
 //4) Determine pagination values
 $stmt  = $dbc->query('SELECT count(*) FROM todo_db');
 $count = $stmt->fetchColumn();
@@ -97,8 +94,6 @@ $offset = ($page - 1) * 10;
 
 //5)Query for todos on current page
 $list = $dbc->query('SELECT * FROM todo_db LIMIT 10 OFFSET ' . $offset);
-
-
 ?>
 
 <!DOCTYPE html>
@@ -149,9 +144,8 @@ $list = $dbc->query('SELECT * FROM todo_db LIMIT 10 OFFSET ' . $offset);
     </ul>
 </body>
 
-<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script>
-
 	$('.btn-remove').click(function () {
 	    var todoId = $(this).data('todo');
 	    if (confirm('Are you sure you want to remove item ' + todoId + '?')) {
@@ -159,6 +153,5 @@ $list = $dbc->query('SELECT * FROM todo_db LIMIT 10 OFFSET ' . $offset);
 	        $('#removeForm').submit();
 	    }
 	});
-
 	</script>
 </html>
